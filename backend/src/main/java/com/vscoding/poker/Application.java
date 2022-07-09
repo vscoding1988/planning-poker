@@ -1,4 +1,4 @@
-package com.vscoding.tutorial.spring;
+package com.vscoding.poker;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
