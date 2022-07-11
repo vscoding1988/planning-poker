@@ -1,6 +1,7 @@
 package com.vscoding.poker.control;
 
 import com.vscoding.poker.boundary.bean.SessionCreationResponse;
+import com.vscoding.poker.boundary.bean.UserRequest;
 import com.vscoding.poker.entity.PokerSessionDAO;
 import com.vscoding.poker.entity.PokerSessionModel;
 import com.vscoding.poker.entity.UserDAO;
@@ -12,9 +13,9 @@ import com.vscoding.poker.entity.VoteModel;
 import com.vscoding.poker.exception.SessionNotFoundException;
 import com.vscoding.poker.exception.UserNotFoundException;
 import com.vscoding.poker.exception.UserStoryNotFoundException;
-
-import java.util.UUID;
-
+import com.vscoding.poker.utils.IdBuilder;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,13 +30,12 @@ public class PlanningPokerService {
   private final UserStoryDAO userStoryDAO;
   private final UserDAO userDAO;
 
-  public UserModel createNewUser(String username, String sessionId) {
+  public UserModel joinSession(UserRequest request, String sessionId) {
     var sessionOpt = pokerSessionDAO.findById(sessionId);
 
     if (sessionOpt.isPresent()) {
 
-      var user = new UserModel(UUID.randomUUID().toString(), username);
-      userDAO.save(user);
+      var user = getOrCreateUser(request.getPersonalToken(), request.getUsername());
 
       return addUserToSession(user, sessionOpt.get());
     }
@@ -96,7 +96,7 @@ public class PlanningPokerService {
     var userStory = session.getActiveStory();
 
     if (userStory == null) {
-      userStory = createNewUserStory("unnamed", session);
+      throw new UserStoryNotFoundException("User story is not found.");
     }
 
     var previousVoting = userStory.getParticipants().stream()
@@ -108,7 +108,8 @@ public class PlanningPokerService {
       previousVoting.setVote(VoteModel.NOT_VOTED);
       voteDAO.save(previousVoting);
     } else {
-      previousVoting = new VoteModel(UUID.randomUUID().toString(), VoteModel.NOT_VOTED, userModel);
+      // Add user as new voter
+      previousVoting = new VoteModel(IdBuilder.getVoteId(), VoteModel.NOT_VOTED, userModel);
       voteDAO.save(previousVoting);
 
       userStory.getParticipants().add(previousVoting);
@@ -118,22 +119,33 @@ public class PlanningPokerService {
   }
 
   /**
-   * Create a new user story
+   * Create a new user story and set it as active
    *
    * @param userStoryName name of the user story
    * @param session       planing poker session
    * @return {@link UserStoryModel}
    */
   public UserStoryModel createNewUserStory(String userStoryName, PokerSessionModel session) {
-    var userStoryModel = new UserStoryModel(UUID.randomUUID().toString(), userStoryName);
+    var userStory = new UserStoryModel(IdBuilder.getUserStoryId(), userStoryName);
 
-    session.getUserStories().add(userStoryModel);
-    session.setActiveStory(userStoryModel);
+    if (session.getUserStories() == null) {
+      session.setUserStories(new HashSet<>());
+    }
 
-    userStoryDAO.save(userStoryModel);
+    session.getUserStories().add(userStory);
+
+    if (session.getActiveStory() != null) {
+      // Add all participants of the old active story, but reset their votes
+      var resetedParticipants = resetParticipants(session.getActiveStory().getParticipants());
+      userStory.setParticipants(resetedParticipants);
+    }
+
+    session.setActiveStory(userStory);
+
+    userStoryDAO.save(userStory);
     pokerSessionDAO.save(session);
 
-    return userStoryModel;
+    return userStory;
   }
 
   /**
@@ -148,10 +160,54 @@ public class PlanningPokerService {
   }
 
   /**
-   * @param personalToken this could be either a temporary generated key, or if a user already used the side his user token
-   * @return
+   * Create a new session
+   *
+   * @param request holder for username and userid/temporary token
+   * @return {@link SessionCreationResponse}
    */
-  public SessionCreationResponse createNewSession(String personalToken) {
-    return new SessionCreationResponse("1", "2");
+  public SessionCreationResponse createNewSession(UserRequest request) {
+    var user = getOrCreateUser(request.getPersonalToken(), request.getUsername());
+
+    var pokerSessionModel = new PokerSessionModel(IdBuilder.getSessionId(), user);
+    createNewUserStory("default", pokerSessionModel);
+
+    return new SessionCreationResponse(pokerSessionModel.getId(), user.getId());
+  }
+
+  /**
+   * Find or create a user
+   *
+   * @param userId   user id
+   * @param username user name
+   * @return {@link UserModel}
+   */
+  private UserModel getOrCreateUser(String userId, String username) {
+    var userOpt = userDAO.findById(userId);
+
+    if (userOpt.isEmpty()) {
+      // Create new user
+      var user = new UserModel(IdBuilder.getUserId(), username);
+      userDAO.save(user);
+      return user;
+    }
+
+    return userOpt.get();
+  }
+
+  /**
+   * Create a new set with participants and reset their votes
+   *
+   * @param participants participants of the last story
+   * @return Set {@link VoteModel}
+   */
+  private Set<VoteModel> resetParticipants(Set<VoteModel> participants) {
+    var result = new HashSet<VoteModel>();
+
+    participants.forEach(vote -> {
+      var clone = new VoteModel(IdBuilder.getVoteId(), VoteModel.NOT_VOTED, vote.getUserModel());
+      result.add(clone);
+    });
+
+    return result;
   }
 }

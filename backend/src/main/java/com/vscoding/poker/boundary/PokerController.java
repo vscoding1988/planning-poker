@@ -1,7 +1,7 @@
 package com.vscoding.poker.boundary;
 
 import com.vscoding.poker.boundary.bean.SessionCreationResponse;
-import com.vscoding.poker.boundary.bean.UserCreationRequest;
+import com.vscoding.poker.boundary.bean.UserRequest;
 import com.vscoding.poker.boundary.bean.VotingSessionResponse;
 import com.vscoding.poker.control.ModelMapper;
 import com.vscoding.poker.control.PlanningPokerService;
@@ -23,20 +23,19 @@ public class PokerController {
   private final PlanningPokerService service;
   private final SimpMessagingTemplate smt;
 
-  @MessageMapping("/join/{sessionId}/{personalToken}")
+  @MessageMapping("/join/{sessionId}")
   @SendTo("/topic/session/{sessionId}")
   public VotingSessionResponse joinSession(
           @DestinationVariable String sessionId,
-          @DestinationVariable String personalToken,
-          @Payload UserCreationRequest user) {
+          @Payload UserRequest user) {
     log.info("Receiving new user creation '{}'", user.getUsername());
 
     // Create new user in the session
-    var newVote = service.createNewUser(user.getUsername(), sessionId);
+    var newVote = service.joinSession(user, sessionId);
 
     // send user his voting id back, by using his personal feed
-    var userCreationResponse = ModelMapper.toUserCreationResponse(newVote);
-    smt.convertAndSend("/topic/personal/" + personalToken, userCreationResponse);
+    var userCreationResponse = ModelMapper.toUserResponse(newVote);
+    smt.convertAndSend("/topic/personal/" + user.getPersonalToken(), userCreationResponse);
 
     // Notify all users about the new participant
     return ModelMapper.toVotingSessionResponse(service.getSession(sessionId));
@@ -58,9 +57,9 @@ public class PokerController {
 
   @MessageMapping("/createSession/{personalToken}")
   @SendTo("/topic/personal/{personalToken}")
-  public SessionCreationResponse createSession(@DestinationVariable String personalToken) {
+  public SessionCreationResponse createSession(@Payload UserRequest request) {
     log.info("Receiving create session request");
 
-    return service.createNewSession(personalToken);
+    return service.createNewSession(request);
   }
 }

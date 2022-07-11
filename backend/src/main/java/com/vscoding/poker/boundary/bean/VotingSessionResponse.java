@@ -1,11 +1,12 @@
 package com.vscoding.poker.boundary.bean;
 
 import java.util.List;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class VotingSessionResponse extends BaseMassageResponse{
+@Getter
+@Setter
+public class VotingSessionResponse extends BaseMassageResponse {
 
   /**
    * list of votings

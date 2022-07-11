@@ -9,11 +9,6 @@ import lombok.Data;
 public class VotingResponse {
 
   /**
-   * User Id
-   */
-  private String userId;
-
-  /**
    * Name of the voter
    */
   private String name;
@@ -24,8 +19,7 @@ public class VotingResponse {
   private boolean voted;
 
 
-  public VotingResponse(String userId, String name) {
-    this.userId = userId;
+  public VotingResponse(String name) {
     this.name = name;
   }
 }

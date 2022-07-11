@@ -1,7 +1,9 @@
 package com.vscoding.poker.entity;
 
+import java.util.Collections;
 import java.util.Set;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
@@ -31,7 +33,7 @@ public class PokerSessionModel {
   /**
    * The owner and creator of the session + everyone how gets rights by the owner
    */
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   Set<UserModel> owner;
 
   /**
@@ -43,6 +45,11 @@ public class PokerSessionModel {
   /**
    * The current active user story
    */
-  @OneToOne
+  @OneToOne(fetch = FetchType.EAGER)
   UserStoryModel activeStory;
+
+  public PokerSessionModel(String id, UserModel owner) {
+    this.id = id;
+    this.owner = Collections.singleton(owner);
+  }
 }

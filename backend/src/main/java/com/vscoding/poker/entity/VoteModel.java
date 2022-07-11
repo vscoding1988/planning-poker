@@ -3,6 +3,7 @@ package com.vscoding.poker.entity;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import lombok.AccessLevel;
@@ -24,7 +25,7 @@ import lombok.experimental.FieldDefaults;
 public class VoteModel {
 
   public static final String NOT_VOTED = "NAN";
-  public static final List<String> SPECIAL_VOTES = Arrays.asList("COFFEE", "QUESTION", NOT_VOTED);
+  protected static final List<String> SPECIAL_VOTES = Arrays.asList("COFFEE", "QUESTION", NOT_VOTED);
 
   @Id
   String id;
@@ -37,6 +38,6 @@ public class VoteModel {
   /**
    * The user how has given the vote
    */
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.EAGER)
   UserModel userModel;
 }

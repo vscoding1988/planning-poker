@@ -2,6 +2,7 @@ package com.vscoding.poker.entity;
 
 import java.util.Set;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import lombok.AccessLevel;
@@ -34,7 +35,7 @@ public class UserStoryModel {
   /**
    * All topic votes
    */
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   Set<VoteModel> participants;
 
   public UserStoryModel(String id, String name) {
