@@ -11,3 +11,25 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+body {
+  background: cadetblue;
+}
+
+section.main {
+  background: beige;
+  border-radius: 2vh;
+  width: 75%;
+  height: 80vh;
+  margin: 10vh auto auto;
+  border: solid beige;
+}
+
+input, button {
+  border-radius: 1vh;
+  padding: 1vh;
+  margin: 3% 5%;
+  width: 90%;
+  -moz-box-sizing:border-box;
+  -webkit-box-sizing:border-box;
+}
