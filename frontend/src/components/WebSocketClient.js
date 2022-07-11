@@ -1,11 +1,14 @@
 import SockJsClient from 'react-stomp';
-import {useRef, useState,useEffect} from "react";
-
+import {useRef, useState, useEffect} from "react";
+import {v4 as uuid} from 'uuid';
 
 function WebSocketClient() {
 
   const [sessionId, setSessionId] = useState(null);
-  const [userId, setUserId] = useState(null);
+  const [user, setUser] = useState({
+    id: uuid(),
+    username: null
+  });
   // TODO domain change
   const [socketUrl, setSocketUrl] = useState(
           'http://localhost:8080/ws-endpoint');
@@ -14,29 +17,41 @@ function WebSocketClient() {
 
   useEffect(() => {
     document.addEventListener('socket.SESSION_CREATION', onSessionCreate);
+    let user = localStorage.getItem("user");
 
+    if (user) {
+      setUser(JSON.parse(user));
+    }
     // TODO do I need an function for removing listener, if deps are empty?
   }, []);
 
   /**
    * Trigger app events based on the message type.
-   * @param e
+   * @param message
    */
-  const onMessage = (e) => {
-    console.log("Message received.")
-    console.log(e)
-    // TODO check message type an dispatch based on type the the message
+  const onMessage = (message) => {
+    const event = new CustomEvent("socket." + message.type, {
+      detail: message
+    });
+    document.dispatchEvent(event);
   }
 
+  /**
+   * Send websocket request for creating a session.
+   *
+   * @param detail contains username
+   */
   const onSessionCreate = ({detail}) => {
-    console.log("onSessionCreate.")
-    console.log(detail)
+    client.current.sendMessage("/app/createSession/" + user.id, JSON.stringify({
+      personalToken: user.id,
+      username: detail.username
+    }));
   }
 
   return (
           <>
             <SockJsClient url={socketUrl}
-                          topics={["/topic/personal/" + userId,
+                          topics={["/topic/personal/" + user.id,
                             "/topic/session/" + sessionId]}
                           ref={(cl) => client.current = cl}
                           onMessage={onMessage}/>
