@@ -12,7 +12,9 @@ import com.vscoding.poker.entity.VoteModel;
 import com.vscoding.poker.exception.SessionNotFoundException;
 import com.vscoding.poker.exception.UserNotFoundException;
 import com.vscoding.poker.exception.UserStoryNotFoundException;
+
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +29,7 @@ public class PlanningPokerService {
   private final UserStoryDAO userStoryDAO;
   private final UserDAO userDAO;
 
-  public VoteModel createNewUser(String username, String sessionId) {
+  public UserModel createNewUser(String username, String sessionId) {
     var sessionOpt = pokerSessionDAO.findById(sessionId);
 
     if (sessionOpt.isPresent()) {
@@ -70,12 +72,12 @@ public class PlanningPokerService {
       var user = userOpt.get();
 
       session.getActiveStory().getParticipants().stream()
-          .filter(voteModel -> voteModel.getUserModel().equals(user))
-          .forEach(voteModel -> {
-            // Update vote
-            voteModel.setVote(vote);
-            voteDAO.save(voteModel);
-          });
+              .filter(voteModel -> voteModel.getUserModel().equals(user))
+              .forEach(voteModel -> {
+                // Update vote
+                voteModel.setVote(vote);
+                voteDAO.save(voteModel);
+              });
     }
 
     throw new SessionNotFoundException(sessionId);
@@ -87,9 +89,9 @@ public class PlanningPokerService {
    *
    * @param userModel {@link UserModel}
    * @param session   session the suer is currently voting
-   * @return updated response
+   * @return {@link UserModel}
    */
-  private VoteModel addUserToSession(UserModel userModel, PokerSessionModel session) {
+  private UserModel addUserToSession(UserModel userModel, PokerSessionModel session) {
 
     var userStory = session.getActiveStory();
 
@@ -98,9 +100,9 @@ public class PlanningPokerService {
     }
 
     var previousVoting = userStory.getParticipants().stream()
-        .filter(participant -> participant.getUserModel().equals(userModel))
-        .findFirst()
-        .orElse(null);
+            .filter(participant -> participant.getUserModel().equals(userModel))
+            .findFirst()
+            .orElse(null);
 
     if (previousVoting != null) {
       previousVoting.setVote(VoteModel.NOT_VOTED);
@@ -112,7 +114,7 @@ public class PlanningPokerService {
       userStory.getParticipants().add(previousVoting);
       userStoryDAO.save(userStory);
     }
-    return previousVoting;
+    return userModel;
   }
 
   /**
@@ -142,10 +144,14 @@ public class PlanningPokerService {
    */
   public PokerSessionModel getSession(String sessionId) {
     return pokerSessionDAO.findById(sessionId)
-        .orElseThrow(() -> new SessionNotFoundException(sessionId));
+            .orElseThrow(() -> new SessionNotFoundException(sessionId));
   }
 
-  public SessionCreationResponse createNewSession() {
-    
+  /**
+   * @param personalToken this could be either a temporary generated key, or if a user already used the side his user token
+   * @return
+   */
+  public SessionCreationResponse createNewSession(String personalToken) {
+    return new SessionCreationResponse("1", "2");
   }
 }

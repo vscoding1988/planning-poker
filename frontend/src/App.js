@@ -15,7 +15,7 @@ function App() {
    * Will be generated, when user is registered
    */
   const [voteId, setVoteId] = useState(null);
-  const [socketUrl, setSocketUrl] = useState('http://localhost:8080/vote');
+  const [socketUrl, setSocketUrl] = useState('http://localhost:8080/ws-endpoint');
 
   const client = useRef(null);
   const votingDisplayComponent = useRef();

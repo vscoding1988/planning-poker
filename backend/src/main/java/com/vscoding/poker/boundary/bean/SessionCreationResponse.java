@@ -19,7 +19,7 @@ public class SessionCreationResponse extends BaseMassageResponse {
    */
   String userId;
 
-  protected SessionCreationResponse(String sessionId, String userId) {
+  public SessionCreationResponse(String sessionId, String userId) {
     super(MESSAGE_TYPE.SESSION_CREATION_RESPONSE);
     this.sessionId = sessionId;
     this.userId = userId;

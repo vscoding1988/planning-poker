@@ -1,0 +1,44 @@
+@startuml
+skinparam monochrome true
+
+participant frontend
+participant "personal feed" as pf
+participant "session feed" as sf
+participant PokerController
+
+activate frontend
+frontend -> frontend: createOrCreate personal feed ID
+frontend -> frontend: save personalToken in local storage
+frontend -> pf: subscribe to personal feed
+
+frontend -> PokerController :  /createSession/{personalToken}
+deactivate frontend
+activate PokerController
+
+PokerController -> PlanningPokerService: createNewSession
+activate PlanningPokerService
+
+PlanningPokerService -> PlanningPokerService: findOrCreateNewUser
+PlanningPokerService -> PlanningPokerService: createNewSession
+PlanningPokerService -> PlanningPokerService: setUserAsSessionOwner
+PlanningPokerService --> PokerController: return SessionCreationResponse
+deactivate PlanningPokerService
+
+PokerController -> pf: send creation msg to personal feed
+deactivate PokerController
+
+frontend -> pf :  poll personal feed
+activate frontend
+frontend -> frontend: save user id in local storage
+frontend -> frontend: change url to /{sessionId}
+frontend -> frontend: subscribe to personal feed (token = userId)
+frontend -> frontend: subscribe to session feed
+<- frontend
+deactivate frontend
+
+
+legend bottom right
+    | personal feed | Personal feed represents the feed of the current\n user.This feed will have as segment the ID of the \n user or if user has to be created, a temporary ID\n created by frontend. |
+    | session feed | Session feed is shared by all participants of the\n session, vote/joining events will be feeded here.  |
+endlegend
+@enduml

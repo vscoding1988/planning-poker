@@ -1,5 +1,6 @@
 package com.vscoding.poker.boundary;
 
+import com.vscoding.poker.boundary.bean.SessionCreationResponse;
 import com.vscoding.poker.boundary.bean.UserCreationRequest;
 import com.vscoding.poker.boundary.bean.VotingSessionResponse;
 import com.vscoding.poker.control.ModelMapper;
@@ -13,6 +14,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+
 @Slf4j
 @Controller
 @AllArgsConstructor
@@ -21,12 +23,12 @@ public class PokerController {
   private final PlanningPokerService service;
   private final SimpMessagingTemplate smt;
 
-  @MessageMapping("/newUser/{sessionId}/{personalToken}")
-  @SendTo("/topic/vote/{sessionId}")
-  public VotingSessionResponse registerUser(
-      @DestinationVariable String sessionId,
-      @DestinationVariable String personalToken,
-      @Payload UserCreationRequest user) {
+  @MessageMapping("/join/{sessionId}/{personalToken}")
+  @SendTo("/topic/session/{sessionId}")
+  public VotingSessionResponse joinSession(
+          @DestinationVariable String sessionId,
+          @DestinationVariable String personalToken,
+          @Payload UserCreationRequest user) {
     log.info("Receiving new user creation '{}'", user.getUsername());
 
     // Create new user in the session
@@ -34,18 +36,18 @@ public class PokerController {
 
     // send user his voting id back, by using his personal feed
     var userCreationResponse = ModelMapper.toUserCreationResponse(newVote);
-    smt.convertAndSend("/topic/personal/" + sessionId + "/" + personalToken, userCreationResponse);
+    smt.convertAndSend("/topic/personal/" + personalToken, userCreationResponse);
 
     // Notify all users about the new participant
     return ModelMapper.toVotingSessionResponse(service.getSession(sessionId));
   }
 
   @MessageMapping("/vote/{sessionId}/{voteId}")
-  @SendTo("/topic/vote/{sessionId}")
+  @SendTo("/topic/session/{sessionId}")
   public VotingSessionResponse vote(
-      @DestinationVariable String userId,
-      @DestinationVariable String sessionId,
-      @Payload String vote) {
+          @DestinationVariable String userId,
+          @DestinationVariable String sessionId,
+          @Payload String vote) {
     log.info("Receiving vote {} with content: {}", userId, vote);
 
     service.addVote(userId, vote, sessionId);
@@ -56,12 +58,9 @@ public class PokerController {
 
   @MessageMapping("/createSession/{personalToken}")
   @SendTo("/topic/personal/{personalToken}")
-  public VotingSessionResponse createSession() {
+  public SessionCreationResponse createSession(@DestinationVariable String personalToken) {
     log.info("Receiving create session request");
 
-    service.createNewSession();
-
-    // Notify all about the vote
-    return ModelMapper.toVotingSessionResponse(service.getSession(sessionId));
+    return service.createNewSession(personalToken);
   }
 }

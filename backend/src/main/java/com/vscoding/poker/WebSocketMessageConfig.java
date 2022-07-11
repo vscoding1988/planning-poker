@@ -12,7 +12,7 @@ public class WebSocketMessageConfig implements WebSocketMessageBrokerConfigurer 
 
   @Override
   public void registerStompEndpoints(final StompEndpointRegistry registry) {
-    registry.addEndpoint("/vote")
+    registry.addEndpoint("/ws-endpoint")
         .setAllowedOrigins("http://localhost:3000")
         .withSockJS();
   }
