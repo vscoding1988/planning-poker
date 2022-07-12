@@ -5,10 +5,7 @@ import {v4 as uuid} from 'uuid';
 function WebSocketClient() {
 
   const [sessionId] = useState(readSessionIdFromUrl);
-  const [user, setUser] = useState({
-    userId: uuid(),
-    username: null
-  });
+  const [user, setUser] = useState(readUserFromLocalStorage);
   // TODO domain change
   const [socketUrl] = useState('http://localhost:8080/ws-endpoint');
 
@@ -38,16 +35,16 @@ function WebSocketClient() {
    *
    * @param message contains type, userId, username
    */
-  const onUserResponse = (message) => {
+  const onUserResponse = ({detail}) => {
     let newUser = {
-      userId: message.userId,
-      username: message.username
+      userId: detail.userId,
+      username: detail.username
     }
 
     localStorage.setItem("user", JSON.stringify(newUser));
 
-    if(newUser.userId !== user.userId){
-      setUser(message);
+    if (newUser.userId !== user.userId) {
+      setUser(newUser);
     }
   }
 
@@ -72,27 +69,28 @@ function WebSocketClient() {
   function readSessionIdFromUrl() {
     let url = window.location.href;
 
-    if(url.indexOf("/session/") > -1){
+    if (url.indexOf("/session/") > -1) {
       let split = url.split("/session/");
       return split[1];
     }
   }
 
   /**
-   * Will check if a user in localStorage exists and if one is found, validate it.
+   * If user already has used the app, he will have an old user written in localStorage, if not we would generate a
+   * user with temporary id, the id will be overwritten when the user will enter his name.
+   *
+   * @returns {{userId: string, username: string}|any}
    */
-  function checkForExistingUser() {
+  function readUserFromLocalStorage() {
     let oldUserStr = localStorage.getItem("user");
 
     if (oldUserStr) {
-      let oldUser = JSON.parse(oldUserStr);
-      // When user exists we have to validate him, we will use the user.userId
-      // as long the user is not validated
-      client.current.sendMessage("/app/validateUser/" + user.userId,
-              JSON.stringify({
-                personalToken: oldUser.userId,
-                username: oldUser.username
-              }));
+      return JSON.parse(oldUserStr);
+    }
+
+    return {
+      userId: uuid(),
+      username:null
     }
   }
 
@@ -102,7 +100,6 @@ function WebSocketClient() {
                           topics={["/topic/personal/" + user.userId,
                             "/topic/session/" + sessionId]}
                           ref={(cl) => client.current = cl}
-                          onConnect={checkForExistingUser}
                           onMessage={onMessage}/>
           </>
   );

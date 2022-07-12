@@ -9,11 +9,10 @@ import {createRef, useEffect, useState} from "react";
  * @constructor
  */
 function CreateSessionComponent() {
-  const [username, setUsername] = useState(null);
+  const [username, setUsername] = useState(getUser);
   const nameInput = createRef();
 
   useEffect(() => {
-    document.addEventListener('socket.USER_RESPONSE', onUserResponse);
     document.addEventListener('socket.SESSION_CREATION_RESPONSE',
             onCreationResponse);
 
@@ -21,16 +20,19 @@ function CreateSessionComponent() {
   }, []);
 
   /**
-   * On load the {@link WebSocketClient} will check the localStorage and if there
-   * is a username + userid, it will send a message to the server to check if the
-   * user is still valid and trigger the event socket.USER_RESPONSE. If the user
-   * uses the app for the first time, this won't be called.
+   * If the user has already used the app, he will have a userId and username in the localStorage, if not the username will
+   * stay empty, so that the input field for the username is rendered.
    *
-   * TODO maybe instead check the localStorage by our self?
-   * @param detail contains username
+   * @returns {string|any}
    */
-  const onUserResponse = ({detail}) => {
-    setUsername(detail.username);
+  function getUser() {
+    let oldUserStr = localStorage.getItem("user");
+
+    if (oldUserStr) {
+      return JSON.parse(oldUserStr).username;
+    }
+
+    return null;
   }
 
   /**
