@@ -2,9 +2,11 @@ package com.vscoding.poker.boundary;
 
 import com.vscoding.poker.boundary.bean.SessionCreationResponse;
 import com.vscoding.poker.boundary.bean.UserRequest;
+import com.vscoding.poker.boundary.bean.UserResponse;
 import com.vscoding.poker.boundary.bean.VotingSessionResponse;
 import com.vscoding.poker.control.ModelMapper;
 import com.vscoding.poker.control.PlanningPokerService;
+import com.vscoding.poker.entity.UserModel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -61,5 +63,15 @@ public class PokerController {
     log.info("Receiving create session request");
 
     return service.createNewSession(request);
+  }
+
+  @MessageMapping("/validateUser/{personalToken}")
+  @SendTo("/topic/personal/{personalToken}")
+  public UserResponse validateUser(@Payload UserRequest request) {
+    log.info("Receiving user validation request");
+
+    var user = service.getOrCreateUser(request.getPersonalToken(), request.getUsername());
+
+    return ModelMapper.toUserResponse(user);
   }
 }

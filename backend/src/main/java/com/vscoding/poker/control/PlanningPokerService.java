@@ -181,7 +181,7 @@ public class PlanningPokerService {
    * @param username user name
    * @return {@link UserModel}
    */
-  private UserModel getOrCreateUser(String userId, String username) {
+  public UserModel getOrCreateUser(String userId, String username) {
     var userOpt = userDAO.findById(userId);
 
     if (userOpt.isEmpty()) {
