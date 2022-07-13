@@ -28,6 +28,11 @@ public class VotingSessionResponse extends BaseMassageResponse {
    */
   private String userStoryName;
 
+  /**
+   * The state of the current voting
+   */
+  private boolean finished;
+
   public VotingSessionResponse() {
     super(MESSAGE_TYPE.VOTING_RESPONSE);
   }

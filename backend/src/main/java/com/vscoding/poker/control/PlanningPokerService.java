@@ -68,16 +68,45 @@ public class PlanningPokerService {
       }
 
       var user = userOpt.get();
+      var activeUserStory = session.getActiveStory();
 
-      session.getActiveStory().getParticipants().stream()
-              .filter(voteModel -> voteModel.getUserModel().equals(user))
-              .forEach(voteModel -> {
-                // Update vote
-                voteModel.setVote(vote);
-                voteDAO.save(voteModel);
-              });
-    }else{
+      updateVoteForUser(user, activeUserStory, vote);
+      updateUserStoryState(activeUserStory);
+    } else {
       throw new SessionNotFoundException(sessionId);
+    }
+  }
+
+  /**
+   * Find the user default vote in the active story and update the vote
+   *
+   * @param user            {@link UserModel} current user
+   * @param activeUserStory {@link UserStoryModel} current active user story
+   * @param vote            the vote submited by the user
+   */
+  private void updateVoteForUser(UserModel user, UserStoryModel activeUserStory, String vote) {
+
+    activeUserStory.getParticipants().stream()
+            .filter(voteModel -> voteModel.getUserModel().equals(user))
+            .forEach(voteModel -> {
+              // Update vote
+              voteModel.setVote(vote);
+              voteDAO.save(voteModel);
+            });
+  }
+
+  /**
+   * Check if the story expecting more votes to be marked as finished
+   *
+   * @param activeUserStory {@link UserStoryModel} current active user story
+   */
+  private void updateUserStoryState(UserStoryModel activeUserStory) {
+    var isStoryActive = activeUserStory.getParticipants().stream()
+            .anyMatch(voteModel -> VoteModel.NOT_VOTED.equals(voteModel.getVote()));
+
+    if (isStoryActive != activeUserStory.isFinished()) {
+      activeUserStory.setFinished(isStoryActive);
+      userStoryDAO.save(activeUserStory);
     }
   }
 

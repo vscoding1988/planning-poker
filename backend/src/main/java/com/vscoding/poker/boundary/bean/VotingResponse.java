@@ -15,6 +15,11 @@ public class VotingResponse {
   private String name;
 
   /**
+   * the vote
+   */
+  private String vote;
+
+  /**
    * Has the user voted
    */
   private boolean voted;

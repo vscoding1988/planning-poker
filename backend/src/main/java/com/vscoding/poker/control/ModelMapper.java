@@ -26,9 +26,10 @@ public class ModelMapper {
       result.setSessionId(src.getId());
       result.setUserStoryId(activeStory.getId());
       result.setUserStoryName(activeStory.getName());
+      result.setFinished(activeStory.isFinished());
 
       var votes = new ArrayList<>(activeStory.getParticipants().stream()
-              .map(ModelMapper::toVotingResponse)
+              .map(vote -> toVotingResponse(vote, activeStory.isFinished()))
               .toList());
       votes.sort(Comparator.comparing(VotingResponse::getName));
       result.setVotes(votes);
@@ -37,9 +38,21 @@ public class ModelMapper {
     return result;
   }
 
-  public static VotingResponse toVotingResponse(VoteModel src) {
+  /**
+   * Transform {@link VoteModel} to {@link VotingResponse}
+   *
+   * @param src {@link VoteModel}
+   * @param withVote if true the  {@link VotingResponse} will contain the vote
+   * @return {@link VotingResponse}
+   */
+  public static VotingResponse toVotingResponse(VoteModel src, boolean withVote) {
     var votingResponse = new VotingResponse(src.getUserModel().getName());
     votingResponse.setVoted(!VoteModel.NOT_VOTED.equals(src.getVote()));
+
+    if (withVote) {
+      votingResponse.setVote(src.getVote());
+    }
+
     return votingResponse;
   }
 }

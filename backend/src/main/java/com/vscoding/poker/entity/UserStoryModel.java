@@ -33,6 +33,11 @@ public class UserStoryModel {
   String name;
 
   /**
+   * Is true when all participants had voted, or when the owner has finished the story manually
+   */
+  boolean finished;
+
+  /**
    * All topic votes
    */
   @ManyToMany(fetch = FetchType.EAGER)
