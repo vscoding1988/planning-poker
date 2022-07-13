@@ -33,7 +33,7 @@ function WebSocketClient() {
    * Callback for socket.USER_RESPONSE event. Persist the user in localStorage
    * and if userId has changed update the user state.
    *
-   * @param message contains type, userId, username
+   * @param detail contains type, userId, username
    */
   const onUserResponse = ({detail}) => {
     let newUser = {

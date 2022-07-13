@@ -6,7 +6,6 @@ import com.vscoding.poker.boundary.bean.UserResponse;
 import com.vscoding.poker.boundary.bean.VotingSessionResponse;
 import com.vscoding.poker.control.ModelMapper;
 import com.vscoding.poker.control.PlanningPokerService;
-import com.vscoding.poker.entity.UserModel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -33,11 +32,14 @@ public class PokerController {
     log.info("Receiving new user creation '{}'", user.getUsername());
 
     // Create new user in the session
-    var newVote = service.joinSession(user, sessionId);
+    var newUser = service.joinSession(user, sessionId);
 
-    // send user his voting id back, by using his personal feed
-    var userCreationResponse = ModelMapper.toUserResponse(newVote);
-    smt.convertAndSend("/topic/personal/" + user.getPersonalToken(), userCreationResponse);
+    if (!user.getPersonalToken().equals(newUser.getId())) {
+      // sender does not have a user and has used a temporary ID, so we send him a new userId to his
+      // personal feed
+      var userCreationResponse = ModelMapper.toUserResponse(newUser);
+      smt.convertAndSend("/topic/personal/" + user.getPersonalToken(), userCreationResponse);
+    }
 
     // Notify all users about the new participant
     return ModelMapper.toVotingSessionResponse(service.getSession(sessionId));
