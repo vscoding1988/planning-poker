@@ -13,6 +13,7 @@ function WebSocketClient() {
 
   useEffect(() => {
     document.addEventListener('socket.SESSION_CREATION', onSessionCreation);
+    document.addEventListener('socket.JOIN_SESSION_REQUEST', onJoinRequest);
     document.addEventListener('socket.USER_RESPONSE', onUserResponse);
     // TODO do I need an function for removing listener, if deps are empty?
   }, []);
@@ -26,6 +27,16 @@ function WebSocketClient() {
     const event = new CustomEvent("socket." + message.type, {
       detail: message
     });
+    document.dispatchEvent(event);
+  }
+
+  /**
+   * Trigger event for connection established, this will make sure we send initial
+   * request after socket is connected.
+   */
+  const onConnect = () => {
+    console.log("Websocket connected.");
+    const event = new CustomEvent("socket.CONNECTED", null);
     document.dispatchEvent(event);
   }
 
@@ -55,6 +66,19 @@ function WebSocketClient() {
    */
   const onSessionCreation = ({detail}) => {
     client.current.sendMessage("/app/createSession/" + user.userId,
+            JSON.stringify({
+              personalToken: user.userId,
+              username: detail.username
+            }));
+  }
+
+  /**
+   * Send websocket request for joining a session.
+   *
+   * @param detail contains username
+   */
+  const onJoinRequest = ({detail}) => {
+    client.current.sendMessage("/app/join/" + sessionId,
             JSON.stringify({
               personalToken: user.userId,
               username: detail.username
@@ -100,6 +124,7 @@ function WebSocketClient() {
                           topics={["/topic/personal/" + user.userId,
                             "/topic/session/" + sessionId]}
                           ref={(cl) => client.current = cl}
+                          onConnect={onConnect}
                           onMessage={onMessage}/>
           </>
   );

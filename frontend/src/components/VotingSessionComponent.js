@@ -1,13 +1,17 @@
 import {useEffect, useState} from "react";
 import {v4 as uuid} from 'uuid';
 import EnterNameComponent from "./EnterNameComponent";
+import AllVotesContainerComponent from "./AllVotesContainerComponent";
 
 function VotingSessionComponent() {
 
   const [user, setUser] = useState(readUserFromLocalStorage);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
     document.addEventListener('socket.USER_RESPONSE', onUserResponse);
+    document.addEventListener('socket.VOTING_RESPONSE', onVotingResponse);
+    document.addEventListener('socket.CONNECTED', onConnected);
     // TODO do I need an function for removing listener, if deps are empty?
   }, []);
 
@@ -47,23 +51,43 @@ function VotingSessionComponent() {
     }
   }
 
+  /**
+   * IS triggered by {@link WebSocketClient} when a change in voting is registered.
+   *
+   * @param detail contains type, userId, username
+   */
+  const onVotingResponse = ({detail}) => {
+    setSession(detail);
+  }
+
+  const onConnected = () => {
+    if(user.username && !session){
+      console.log("Join sesssion")
+      // User exists so we can trigger join session directly
+      const sessionCreationEvent = new CustomEvent("socket.JOIN_SESSION_REQUEST",
+              {
+                detail: {
+                  "username": user.username
+                }
+              });
+      document.dispatchEvent(sessionCreationEvent);
+    }
+  }
+
   return (
           <>
-            <section className="main center">
-              {
-                user.username ? (
-                        <h1>You are logged in {user.username}</h1>
-                ) : (
-                        <EnterNameComponent/>
-                )
-              }
-              <div className="voting-container">
+            {
+              user.username ? (
+                      <section className="voting-session-container">
+                        <div className="voting-container">
 
-              </div>
-              <div className="votes">
-
-              </div>
-            </section>
+                        </div>
+                        <AllVotesContainerComponent votes={session?session.votes:[]} user={user}/>
+                      </section>
+              ) : (
+                      <EnterNameComponent/>
+              )
+            }
           </>
   );
 }

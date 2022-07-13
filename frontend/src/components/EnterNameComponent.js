@@ -16,20 +16,21 @@ function EnterNameComponent() {
    * socket.USER_RESPONSE which is handled in {@link VotingDisplayComponent}
    */
   const onCreationClick = () => {
-    const sessionCreationEvent = new CustomEvent("socket.JOIN_SESSION_REQUEST", {
-      detail: {
-        "username": nameInput.current.value
-      }
-    });
+    const sessionCreationEvent = new CustomEvent("socket.JOIN_SESSION_REQUEST",
+            {
+              detail: {
+                "username": nameInput.current.value
+              }
+            });
     document.dispatchEvent(sessionCreationEvent);
     // TODO add loading bar or spinner
   }
 
   return (
-          <>
+          <section className="main center">
             <input placeholder="Please enter your name." ref={nameInput}/>
             <button onClick={onCreationClick}>Join</button>
-          </>
+          </section>
   );
 }
 

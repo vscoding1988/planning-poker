@@ -16,15 +16,32 @@ body {
   background: cadetblue;
 }
 
-section.main {
-  background: beige;
-  border-radius: 2vh;
+section {
   width: 75%;
   height: 80vh;
   margin: 10vh auto auto;
+}
+
+.main,.voting-container,.votes-display-container {
+  background: beige;
+  border-radius: 2vh;
   border: solid beige;
 }
 
+.voting-container{
+  height: 100%;
+  width: 75%;
+}
+
+.votes-display-container{
+  height: 100%;
+  width: 25%;
+  margin-left: 10vh;
+}
+
+.voting-session-container{
+  display: flex;
+}
 input, button {
   border-radius: 1vh;
   padding: 1vh;
