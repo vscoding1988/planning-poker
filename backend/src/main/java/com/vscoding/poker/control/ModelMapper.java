@@ -23,6 +23,9 @@ public class ModelMapper {
     var activeStory = src.getActiveStory();
 
     if (activeStory != null) {
+      result.setSessionId(src.getId());
+      result.setUserStoryId(activeStory.getId());
+      result.setUserStoryName(activeStory.getName());
 
       var votes = new ArrayList<>(activeStory.getParticipants().stream()
               .map(ModelMapper::toVotingResponse)

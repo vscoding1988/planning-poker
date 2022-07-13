@@ -44,13 +44,6 @@ function CreateSessionComponent() {
    * @param detail contains the userId and sessionId
    */
   const onCreationResponse = ({detail}) => {
-    if (!username) {
-      let newUser = {
-        "username": nameInput.current.value,
-        "userId": detail.userId
-      }
-      localStorage.setItem("user", JSON.stringify(newUser));
-    }
     window.open("/session/" + detail.sessionId, "_self");
   }
 

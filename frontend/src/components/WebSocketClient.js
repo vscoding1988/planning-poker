@@ -48,6 +48,8 @@ function WebSocketClient() {
    * @param detail contains type, userId, username
    */
   const onUserResponse = ({detail}) => {
+    console.log("WebSocketClient onUserResponse");
+
     let newUser = {
       userId: detail.userId,
       username: detail.username
@@ -66,6 +68,8 @@ function WebSocketClient() {
    * @param detail contains username
    */
   const onSessionCreation = ({detail}) => {
+    console.log("WebSocketClient onSessionCreation");
+
     client.current.sendMessage("/app/createSession/" + user.userId,
             JSON.stringify({
               personalToken: user.userId,
@@ -79,6 +83,7 @@ function WebSocketClient() {
    * @param detail contains username
    */
   const onJoinRequest = ({detail}) => {
+    console.log("WebSocketClient onJoinRequest");
     client.current.sendMessage("/app/join/" + sessionId,
             JSON.stringify({
               personalToken: user.userId,
@@ -92,6 +97,7 @@ function WebSocketClient() {
    * @param detail contains vote
    */
   const onVoteRequest = ({detail}) => {
+    console.log("WebSocketClient onVoteRequest");
     client.current.sendMessage("/app/vote/" + sessionId + "/" + user.userId,
             detail.vote);
   }
@@ -117,15 +123,18 @@ function WebSocketClient() {
    * @returns {{userId: string, username: string}|any}
    */
   function readUserFromLocalStorage() {
+    console.log("WebSocketClient readUserFromLocalStorage");
     let oldUserStr = localStorage.getItem("user");
 
     if (oldUserStr) {
       return JSON.parse(oldUserStr);
     }
 
+    console.log("WebSocketClient readUserFromLocalStorage fallback to temp user");
+    // TODO I am not setting the username, because if I do the state change
+    //  in onUserResponse is not triggered, need to investigate that.
     return {
-      userId: uuid(),
-      username: null
+      userId: uuid()
     }
   }
 

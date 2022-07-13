@@ -78,7 +78,9 @@ function VotingSessionComponent() {
             {
               user.username ? (
                       <section className="voting-session-container">
-                        <VotingComponent userVote={null}/>
+                        <VotingComponent
+                                userStoryId={session ? session.userStoryId
+                                        : null}/>
                         <AllVotesContainerComponent
                                 votes={session ? session.votes : []}
                                 user={user}/>

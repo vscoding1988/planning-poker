@@ -76,9 +76,9 @@ public class PlanningPokerService {
                 voteModel.setVote(vote);
                 voteDAO.save(voteModel);
               });
+    }else{
+      throw new SessionNotFoundException(sessionId);
     }
-
-    throw new SessionNotFoundException(sessionId);
   }
 
   /**
@@ -103,7 +103,6 @@ public class PlanningPokerService {
             .orElse(null);
 
     if (previousVoting != null) {
-      previousVoting.setVote(VoteModel.NOT_VOTED);
       voteDAO.save(previousVoting);
     } else {
       // Add user as new voter
