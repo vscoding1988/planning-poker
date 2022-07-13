@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import {v4 as uuid} from 'uuid';
 import EnterNameComponent from "./EnterNameComponent";
 import AllVotesContainerComponent from "./AllVotesContainerComponent";
+import VotingComponent from "./VotingComponent";
 
 function VotingSessionComponent() {
 
@@ -61,16 +62,14 @@ function VotingSessionComponent() {
   }
 
   const onConnected = () => {
-    if(user.username && !session){
-      console.log("Join sesssion")
+    if (user.username && !session) {
       // User exists so we can trigger join session directly
-      const sessionCreationEvent = new CustomEvent("socket.JOIN_SESSION_REQUEST",
-              {
-                detail: {
-                  "username": user.username
-                }
-              });
-      document.dispatchEvent(sessionCreationEvent);
+      const event = new CustomEvent("socket.JOIN_SESSION_REQUEST", {
+        detail: {
+          "username": user.username
+        }
+      });
+      document.dispatchEvent(event);
     }
   }
 
@@ -79,10 +78,10 @@ function VotingSessionComponent() {
             {
               user.username ? (
                       <section className="voting-session-container">
-                        <div className="voting-container">
-
-                        </div>
-                        <AllVotesContainerComponent votes={session?session.votes:[]} user={user}/>
+                        <VotingComponent userVote={null}/>
+                        <AllVotesContainerComponent
+                                votes={session ? session.votes : []}
+                                user={user}/>
                       </section>
               ) : (
                       <EnterNameComponent/>

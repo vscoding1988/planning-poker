@@ -63,9 +63,7 @@ public class PlanningPokerService {
       var userOpt = userDAO.findById(userId);
 
       if (userOpt.isEmpty()) {
-        // TODO this may happen, when the user has his ID in the localStorage, but the user in DB was deleted,
-        //  maybe instead of exception, the user should be recreated, but than I need a username to.
-        //  For now I would expect the frontend to call user recreation
+        // Normally this can't happen, because the user is created when he joins the session
         throw new UserNotFoundException(userId);
       }
 

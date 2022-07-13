@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class VotingResponse {
 
+
   /**
    * Name of the voter
    */
@@ -17,7 +18,6 @@ public class VotingResponse {
    * Has the user voted
    */
   private boolean voted;
-
 
   public VotingResponse(String name) {
     this.name = name;

@@ -15,6 +15,7 @@ function WebSocketClient() {
     document.addEventListener('socket.SESSION_CREATION', onSessionCreation);
     document.addEventListener('socket.JOIN_SESSION_REQUEST', onJoinRequest);
     document.addEventListener('socket.USER_RESPONSE', onUserResponse);
+    document.addEventListener('socket.VOTE_REQUEST', onVoteRequest);
     // TODO do I need an function for removing listener, if deps are empty?
   }, []);
 
@@ -86,6 +87,16 @@ function WebSocketClient() {
   }
 
   /**
+   * Send websocket request for voting in session.
+   *
+   * @param detail contains vote
+   */
+  const onVoteRequest = ({detail}) => {
+    client.current.sendMessage("/app/vote/" + sessionId + "/" + user.userId,
+            detail.vote);
+  }
+
+  /**
    * If on the vote page, get session ID from the url.
    *
    * @returns {string}
@@ -114,7 +125,7 @@ function WebSocketClient() {
 
     return {
       userId: uuid(),
-      username:null
+      username: null
     }
   }
 

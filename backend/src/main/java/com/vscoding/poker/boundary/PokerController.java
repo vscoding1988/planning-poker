@@ -45,7 +45,7 @@ public class PokerController {
     return ModelMapper.toVotingSessionResponse(service.getSession(sessionId));
   }
 
-  @MessageMapping("/vote/{sessionId}/{voteId}")
+  @MessageMapping("/vote/{sessionId}/{userId}")
   @SendTo("/topic/session/{sessionId}")
   public VotingSessionResponse vote(
           @DestinationVariable String userId,
