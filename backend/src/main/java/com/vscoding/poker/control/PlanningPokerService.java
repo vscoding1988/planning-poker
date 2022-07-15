@@ -101,11 +101,11 @@ public class PlanningPokerService {
    * @param activeUserStory {@link UserStoryModel} current active user story
    */
   private void updateUserStoryState(UserStoryModel activeUserStory) {
-    var isStoryActive = activeUserStory.getParticipants().stream()
+    var storyUnfinished = activeUserStory.getParticipants().stream()
             .anyMatch(voteModel -> VoteModel.NOT_VOTED.equals(voteModel.getVote()));
 
-    if (isStoryActive != activeUserStory.isFinished()) {
-      activeUserStory.setFinished(isStoryActive);
+    if (storyUnfinished == activeUserStory.isFinished()) {
+      activeUserStory.setFinished(!storyUnfinished);
       userStoryDAO.save(activeUserStory);
     }
   }
@@ -188,12 +188,10 @@ public class PlanningPokerService {
   /**
    * Create a new session
    *
-   * @param request holder for username and userid/temporary token
+   * @param user {@link UserModel} current user
    * @return {@link SessionCreationResponse}
    */
-  public SessionCreationResponse createNewSession(UserRequest request) {
-    var user = getOrCreateUser(request.getPersonalToken(), request.getUsername());
-
+  public SessionCreationResponse createNewSession(UserModel user) {
     var pokerSessionModel = new PokerSessionModel(IdBuilder.getSessionId(), user);
     createNewUserStory("default", pokerSessionModel);
 

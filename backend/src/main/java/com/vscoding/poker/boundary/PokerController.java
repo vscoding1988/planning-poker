@@ -6,6 +6,7 @@ import com.vscoding.poker.boundary.bean.UserResponse;
 import com.vscoding.poker.boundary.bean.VotingSessionResponse;
 import com.vscoding.poker.control.ModelMapper;
 import com.vscoding.poker.control.PlanningPokerService;
+import com.vscoding.poker.entity.UserModel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -28,18 +29,13 @@ public class PokerController {
   @SendTo("/topic/session/{sessionId}")
   public VotingSessionResponse joinSession(
           @DestinationVariable String sessionId,
-          @Payload UserRequest user) {
-    log.info("Receiving new user creation '{}'", user.getUsername());
+          @Payload UserRequest request) {
+    log.info("Receiving new user join '{}'", request.getUsername());
 
     // Create new user in the session
-    var newUser = service.joinSession(user, sessionId);
+    var user = service.joinSession(request, sessionId);
 
-    if (!user.getPersonalToken().equals(newUser.getId())) {
-      // sender does not have a user and has used a temporary ID, so we send him a new userId to his
-      // personal feed
-      var userCreationResponse = ModelMapper.toUserResponse(newUser);
-      smt.convertAndSend("/topic/personal/" + user.getPersonalToken(), userCreationResponse);
-    }
+    notifyUserAboutChangedId(request, user);
 
     // Notify all users about the new participant
     return ModelMapper.toVotingSessionResponse(service.getSession(sessionId));
@@ -63,8 +59,11 @@ public class PokerController {
   @SendTo("/topic/personal/{personalToken}")
   public SessionCreationResponse createSession(@Payload UserRequest request) {
     log.info("Receiving create session request");
+    var user = service.getOrCreateUser(request.getPersonalToken(), request.getUsername());
 
-    return service.createNewSession(request);
+    notifyUserAboutChangedId(request, user);
+
+    return service.createNewSession(user);
   }
 
   @MessageMapping("/validateUser/{personalToken}")
@@ -75,5 +74,21 @@ public class PokerController {
     var user = service.getOrCreateUser(request.getPersonalToken(), request.getUsername());
 
     return ModelMapper.toUserResponse(user);
+  }
+
+  /**
+   * If the user was using a temporary token we need to notify the user about the change of the personal
+   * token.
+   *
+   * @param request {@link UserRequest} user request
+   * @param user {@link UserModel} user in DB
+   */
+  private void notifyUserAboutChangedId(UserRequest request, UserModel user) {
+    if (!request.getPersonalToken().equals(user.getId())) {
+      // sender does not have a user and has used a temporary ID, so we send him a new userId to his
+      // personal feed
+      var userCreationResponse = ModelMapper.toUserResponse(user);
+      smt.convertAndSend("/topic/personal/" + request.getPersonalToken(), userCreationResponse);
+    }
   }
 }

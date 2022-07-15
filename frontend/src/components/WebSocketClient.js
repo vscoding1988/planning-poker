@@ -2,6 +2,8 @@ import SockJsClient from 'react-stomp';
 import {useEffect, useRef, useState} from "react";
 import {v4 as uuid} from 'uuid';
 
+const personalToken = uuid();
+
 function WebSocketClient() {
 
   const [sessionId] = useState(readSessionIdFromUrl);
@@ -11,13 +13,27 @@ function WebSocketClient() {
 
   const client = useRef(null);
 
+  /**
+   * will register initial callbacks, we need to re register them, after user is
+   * changed, because when page is loaded, the user will be 'null' this state is
+   * persisted in the callbacks, and the setting of the user afterwards is not
+   * propagated, so the user will stay null.
+   */
   useEffect(() => {
     document.addEventListener('socket.SESSION_CREATION', onSessionCreation);
     document.addEventListener('socket.JOIN_SESSION_REQUEST', onJoinRequest);
     document.addEventListener('socket.USER_RESPONSE', onUserResponse);
     document.addEventListener('socket.VOTE_REQUEST', onVoteRequest);
-    // TODO do I need an function for removing listener, if deps are empty?
-  }, []);
+
+    // The method will be executed before re-rendering. We want to remove all listener
+    // before they are attached again (with actual user state)
+    return () => {
+      document.removeEventListener('socket.SESSION_CREATION', onSessionCreation);
+      document.removeEventListener('socket.JOIN_SESSION_REQUEST', onJoinRequest);
+      document.removeEventListener('socket.USER_RESPONSE', onUserResponse);
+      document.removeEventListener('socket.VOTE_REQUEST', onVoteRequest);
+    }
+  }, [user]);
 
   /**
    * Trigger app events based on the message type. If USER_RESPONSE
@@ -25,6 +41,8 @@ function WebSocketClient() {
    * @param message payload from server, will contain type
    */
   const onMessage = (message) => {
+    console.log("Websocket onMessage " + message.type + " current user "
+            + JSON.stringify(user));
     const event = new CustomEvent("socket." + message.type, {
       detail: message
     });
@@ -57,7 +75,8 @@ function WebSocketClient() {
 
     localStorage.setItem("user", JSON.stringify(newUser));
 
-    if (newUser.userId !== user.userId) {
+    if (!user || newUser.userId !== user.userId) {
+      console.log("WebSocketClient reset user to" + JSON.stringify(newUser));
       setUser(newUser);
     }
   }
@@ -70,9 +89,9 @@ function WebSocketClient() {
   const onSessionCreation = ({detail}) => {
     console.log("WebSocketClient onSessionCreation");
 
-    client.current.sendMessage("/app/createSession/" + user.userId,
+    client.current.sendMessage("/app/createSession/" + getUserId(),
             JSON.stringify({
-              personalToken: user.userId,
+              personalToken: getUserId(),
               username: detail.username
             }));
   }
@@ -86,7 +105,7 @@ function WebSocketClient() {
     console.log("WebSocketClient onJoinRequest");
     client.current.sendMessage("/app/join/" + sessionId,
             JSON.stringify({
-              personalToken: user.userId,
+              personalToken: getUserId(),
               username: detail.username
             }));
   }
@@ -96,7 +115,7 @@ function WebSocketClient() {
    *
    * @param detail contains vote
    */
-  const onVoteRequest = ({detail}) => {
+  function onVoteRequest({detail}){
     console.log("WebSocketClient onVoteRequest");
     client.current.sendMessage("/app/vote/" + sessionId + "/" + user.userId,
             detail.vote);
@@ -130,19 +149,41 @@ function WebSocketClient() {
       return JSON.parse(oldUserStr);
     }
 
-    console.log("WebSocketClient readUserFromLocalStorage fallback to temp user");
-    // TODO I am not setting the username, because if I do the state change
-    //  in onUserResponse is not triggered, need to investigate that.
-    return {
-      userId: uuid()
+    console.log("WebSocketClient set user to null");
+    return null;
+  }
+
+  function getTopics() {
+    let topics = [];
+
+    if (sessionId) {
+      // We are currently in a poker session, so we want to subscribe to the session feed
+      topics.push("/topic/session/" + sessionId);
     }
+
+    if (user) {
+      topics.push("/topic/personal/" + user.userId);
+    } else {
+      // This is the first time we use the app, so we want to use a temporary feed
+      // until we get the real user ID
+      topics.push("/topic/personal/" + personalToken);
+    }
+
+    console.log("WebSocketClient Subscribe to " + JSON.stringify(topics));
+    return topics;
+  }
+
+  function getUserId() {
+    if (user && user.userId) {
+      return user.userId;
+    }
+    return personalToken;
   }
 
   return (
           <>
             <SockJsClient url={socketUrl}
-                          topics={["/topic/personal/" + user.userId,
-                            "/topic/session/" + sessionId]}
+                          topics={getTopics()}
                           ref={(cl) => client.current = cl}
                           onConnect={onConnect}
                           onMessage={onMessage}/>

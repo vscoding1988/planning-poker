@@ -9,7 +9,7 @@ import WebSocketClient from "./components/WebSocketClient";
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-        <React.StrictMode>
+        <>
           <WebSocketClient/>
           <BrowserRouter>
             <Routes>
@@ -17,5 +17,5 @@ root.render(
               <Route path="/session/*" element={<VotingSessionComponent/>}/>
             </Routes>
           </BrowserRouter>
-        </React.StrictMode>
+        </>
 );

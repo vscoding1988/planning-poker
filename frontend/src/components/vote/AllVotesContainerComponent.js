@@ -1,10 +1,10 @@
-function AllVotesContainerComponent({votes, user}) {
+function AllVotesContainerComponent({votes}) {
 
   function renderVotes() {
     if (votes) {
-      return votes.map(vote => (
-                      <li key={vote.name}> {vote.name} - {vote.voted
-                              ? "has voted" : "has not voted"}</li>
+      return votes.map((vote,index) => (
+                      <li key={vote.name+index}> {vote.name} - {vote.voted
+                              ? "has voted" : "has not voted"} {vote.vote}</li>
               )
       )
     }

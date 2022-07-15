@@ -12,6 +12,7 @@ function VotingComponent({userStoryId}) {
   }
 
   const onVote = (option) => {
+    // Send server update
     const event = new CustomEvent("socket.VOTE_REQUEST", {
       detail: {
         "vote": option
