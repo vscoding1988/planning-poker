@@ -28,8 +28,10 @@ function WebSocketClient() {
     // The method will be executed before re-rendering. We want to remove all listener
     // before they are attached again (with actual user state)
     return () => {
-      document.removeEventListener('socket.SESSION_CREATION', onSessionCreation);
-      document.removeEventListener('socket.JOIN_SESSION_REQUEST', onJoinRequest);
+      document.removeEventListener('socket.SESSION_CREATION',
+              onSessionCreation);
+      document.removeEventListener('socket.JOIN_SESSION_REQUEST',
+              onJoinRequest);
       document.removeEventListener('socket.USER_RESPONSE', onUserResponse);
       document.removeEventListener('socket.VOTE_REQUEST', onVoteRequest);
     }
@@ -56,7 +58,10 @@ function WebSocketClient() {
   const onConnect = () => {
     console.log("Websocket connected.");
     const event = new CustomEvent("socket.CONNECTED", null);
-    document.dispatchEvent(event);
+
+    // Workaround the lib is triggering on onConnected, when the server is
+    // not connected jet
+    setTimeout(() => document.dispatchEvent(event), 500);
   }
 
   /**
@@ -115,7 +120,7 @@ function WebSocketClient() {
    *
    * @param detail contains vote
    */
-  function onVoteRequest({detail}){
+  function onVoteRequest({detail}) {
     console.log("WebSocketClient onVoteRequest");
     client.current.sendMessage("/app/vote/" + sessionId + "/" + user.userId,
             detail.vote);

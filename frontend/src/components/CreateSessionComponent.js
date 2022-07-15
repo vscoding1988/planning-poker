@@ -9,7 +9,7 @@ import {createRef, useEffect, useState} from "react";
  * @constructor
  */
 function CreateSessionComponent() {
-  const [username, setUsername] = useState(getUser);
+  const [username] = useState(getUser);
   const nameInput = createRef();
 
   useEffect(() => {

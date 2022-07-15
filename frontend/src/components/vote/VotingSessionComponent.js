@@ -53,7 +53,7 @@ function VotingSessionComponent() {
   }
 
   /**
-   * IS triggered by {@link WebSocketClient} when a change in voting is registered.
+   * Is triggered by {@link WebSocketClient} when a change in voting is registered.
    *
    * @param detail contains type, userId, username
    */
