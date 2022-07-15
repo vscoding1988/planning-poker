@@ -3,11 +3,13 @@ import {v4 as uuid} from 'uuid';
 import EnterNameComponent from "./EnterNameComponent";
 import AllVotesContainerComponent from "./AllVotesContainerComponent";
 import VotingComponent from "./VotingComponent";
+import VotingDisplayComponent from "./VotingDisplayComponent";
 
 function VotingSessionComponent() {
 
   const [user, setUser] = useState(readUserFromLocalStorage);
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(
+          {userStoryId: null, votes: [], finished: false});
 
   useEffect(() => {
     document.addEventListener('socket.USER_RESPONSE', onUserResponse);
@@ -62,7 +64,7 @@ function VotingSessionComponent() {
   }
 
   const onConnected = () => {
-    if (user.username && !session) {
+    if (user.username && !session.userStoryId) {
       // User exists so we can trigger join session directly
       const event = new CustomEvent("socket.JOIN_SESSION_REQUEST", {
         detail: {
@@ -72,18 +74,26 @@ function VotingSessionComponent() {
       document.dispatchEvent(event);
     }
   }
+  console.log("VotingSessionComponent rerender");
 
   return (
           <>
             {
               user.username ? (
                       <section className="voting-session-container">
-                        <VotingComponent
-                                userStoryId={session ? session.userStoryId
-                                        : null}/>
+                        {session && session.finished ?
+                                (
+                                        <VotingDisplayComponent
+                                                votes={session.votes}/>
+                                ) : (
+                                        <VotingComponent
+                                                userStoryId={session.userStoryId}/>
+                                )
+
+                        }
+
                         <AllVotesContainerComponent
-                                votes={session ? session.votes : []}
-                                user={user}/>
+                                votes={session.votes}/>
                       </section>
               ) : (
                       <EnterNameComponent/>
