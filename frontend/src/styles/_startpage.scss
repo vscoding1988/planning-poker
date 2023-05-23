@@ -1,0 +1,12 @@
+@import "_variables.scss";
+
+.create-session-wrapper {
+  background: $background-color-secondary;
+  border-radius: 2vh;
+  border: solid $background-color-secondary;
+
+  h1.greetings {
+    text-align: center;
+  }
+}
+

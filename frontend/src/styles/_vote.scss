@@ -1,0 +1,42 @@
+@import "_variables.scss";
+
+.voting-session-container {
+  display: flex;
+
+  .voting-container {
+    height: 100%;
+    width: 75%;
+    display: flex;
+    flex-wrap: wrap;
+
+    .vote-object {
+      border: solid $card-color-border;
+      border-radius: 2vh;
+      background: $card-color;
+      min-width: 15%;
+      height: 25%;
+      margin: 2vh;
+      cursor: pointer;
+
+      &.active {
+        border: solid $card-color-hover-border;
+      }
+
+      &:hover {
+        border: solid $card-color-hover-border;
+      }
+    }
+  }
+
+  .votes-display-container {
+    height: 100%;
+    width: 25%;
+    margin-left: 10vh;
+  }
+}
+
+.voting-container, .votes-display-container {
+  background: $background-color-secondary;
+  border-radius: 2vh;
+  border: solid $background-color-secondary;
+}

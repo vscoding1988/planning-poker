@@ -4,6 +4,7 @@ import EnterNameComponent from "./EnterNameComponent";
 import AllVotesContainerComponent from "./AllVotesContainerComponent";
 import VotingComponent from "./VotingComponent";
 import VotingDisplayComponent from "./VotingDisplayComponent";
+import HeaderComponent from "../HeaderComponent";
 
 function VotingSessionComponent() {
 
@@ -78,6 +79,7 @@ function VotingSessionComponent() {
 
   return (
           <>
+            <HeaderComponent/>
             {
               user.username ? (
                       <section className="voting-session-container">

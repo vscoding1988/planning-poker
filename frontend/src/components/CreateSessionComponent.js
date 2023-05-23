@@ -1,4 +1,5 @@
 import {createRef, useEffect, useState} from "react";
+import HeaderComponent from "./HeaderComponent";
 
 /**
  * Renders the session creation page. If the suer already has user has never used the
@@ -64,14 +65,21 @@ function CreateSessionComponent() {
   }
 
   return (
-          <section className="main center">
-            {username ?
-                    (<h1>Hi {username}</h1>) :
-                    (<input placeholder="Please enter your name."
-                            ref={nameInput}/>)
-            }
-            <button onClick={onCreationClick}>Create new session</button>
-          </section>
+          <>
+            <HeaderComponent/>
+            <section className="main center create-session-wrapper">
+              {username ?
+                      (<h2 data-test-id="create-session-name" className="greetings">Hi {username}</h2>) :
+                      (<input placeholder="Please enter your name."
+                              ref={nameInput}
+                              data-test-id="create-session-input-name"/>)
+              }
+              <button onClick={onCreationClick}
+                      className="create-session-btn"
+                      data-test-id="create-session-submit">Create new session
+              </button>
+            </section>
+          </>
   );
 }
 

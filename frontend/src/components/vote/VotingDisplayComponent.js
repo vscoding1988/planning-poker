@@ -4,7 +4,7 @@
  * @returns {JSX.Element}
  * @constructor
  */
-function VotingComponent({votes}) {
+function VotingDisplayComponent({votes}) {
 
   function renderVotes() {
     let groupedVotes = groupVotes();
@@ -38,4 +38,4 @@ function VotingComponent({votes}) {
   );
 }
 
-export default VotingComponent;
+export default VotingDisplayComponent;

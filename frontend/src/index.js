@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import './index.scss';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import CreateSessionComponent from "./components/CreateSessionComponent";
 import VotingSessionComponent from "./components/vote/VotingSessionComponent";
