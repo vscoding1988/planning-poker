@@ -1,8 +1,9 @@
 package com.vscoding.poker.entity;
 
 import java.util.Objects;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
