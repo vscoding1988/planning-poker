@@ -8,7 +8,7 @@ function VotingComponent({userStoryId}) {
     .map(vote => (<div
             key={vote}
             className={userVote === vote ? "vote-object active" : "vote-object"}
-            onClick={() => onVote(vote)}>{vote}</div>))
+            onClick={() => onVote(vote)}><span>{vote}</span></div>))
   }
 
   const onVote = (option) => {
