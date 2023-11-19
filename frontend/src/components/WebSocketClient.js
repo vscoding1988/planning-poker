@@ -45,6 +45,7 @@ function WebSocketClient() {
   const onMessage = (message) => {
     console.log("Websocket onMessage " + message.type + " current user "
             + JSON.stringify(user));
+
     const event = new CustomEvent("socket." + message.type, {
       detail: message
     });
@@ -108,6 +109,7 @@ function WebSocketClient() {
    */
   const onJoinRequest = ({detail}) => {
     console.log("WebSocketClient onJoinRequest");
+
     client.current.sendMessage("/app/join/" + sessionId,
             JSON.stringify({
               personalToken: getUserId(),
@@ -122,6 +124,7 @@ function WebSocketClient() {
    */
   function onVoteRequest({detail}) {
     console.log("WebSocketClient onVoteRequest");
+
     client.current.sendMessage("/app/vote/" + sessionId + "/" + user.userId,
             detail.vote);
   }
@@ -179,7 +182,7 @@ function WebSocketClient() {
   }
 
   function getUserId() {
-    if (user && user.userId) {
+    if (user?.userId) {
       return user.userId;
     }
     return personalToken;

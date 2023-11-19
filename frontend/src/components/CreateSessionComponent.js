@@ -44,6 +44,9 @@ function CreateSessionComponent() {
    * @param detail contains the userId and sessionId
    */
   const onCreationResponse = ({detail}) => {
+    console.log("CreateSessionComponent onCreationResponse: session "
+            + detail.sessionId + " created");
+
     window.open("/session/" + detail.sessionId, "_self");
   }
 
